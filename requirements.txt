@@ -6,4 +6,5 @@ pyttsx3
 reportlab
 sqlalchemy
 requests
+gunicorn
 flask_sqlalchemy
