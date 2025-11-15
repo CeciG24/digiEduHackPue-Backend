@@ -8,14 +8,18 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
 
-    # Ruta absoluta al archivo SQLite
-    base_dir = os.path.abspath(os.path.dirname(__file__))
-    db_path = os.path.join(base_dir, 'database.sqlite')
+    POSTGRES_USER = 'learnhub_29a4_user'
+    POSTGRES_PASSWORD = 'AcxyhV0FoFoe5DFp90DX15ltnpddlg7S'
+    POSTGRES_DB = 'learnhub_29a4'
+    POSTGRES_HOST = 'dpg-d4cgh549c44c738q9e00-a.oregon-postgres.render.com'
+    POSTGRES_PORT = 5432  # como entero
 
-    # Configuración de SQLAlchemy con SQLite
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
+    app.config['SQLALCHEMY_DATABASE_URI'] = (
+        f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
+        f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+    )
+
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
     # Inicializar extensiones
     db.init_app(app)
     CORS(app)
