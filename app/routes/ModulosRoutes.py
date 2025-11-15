@@ -37,6 +37,39 @@ def get_modulos():
             "error": str(e)
         }), 500
 
+
+# CRUD módulos - obtener módulos por ruta
+@modulo_bp.route("/ruta/<int:id_ruta>", methods=['GET'])
+def get_modulos_por_ruta(id_ruta):
+    try:
+        # Filtramos módulos por id_ruta
+        modulos = Modulo.query.filter_by(id_ruta=id_ruta).all()
+
+        # Estructuración de los datos
+        modulos_data = [
+            {
+                "id_modulo": modulo.id_modulo,
+                "id_ruta": modulo.id_ruta,
+                "titulo": modulo.titulo,
+                "descripcion": modulo.descripcion,
+                "orden": modulo.orden
+            }
+            for modulo in modulos
+        ]
+
+        return jsonify({
+            "success": True,
+            "data": modulos_data,
+            "count": len(modulos_data)
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+
 @modulo_bp.route("/post-modulo", methods=["POST"])
 def post_modulo():
     try:
