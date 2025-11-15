@@ -8,3 +8,4 @@ sqlalchemy
 requests
 gunicorn
 flask_sqlalchemy
+psycopg2-binary
