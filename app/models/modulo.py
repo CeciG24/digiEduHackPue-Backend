@@ -9,7 +9,9 @@ class Modulo(db.Model):
     descripcion = db.Column(db.Text, nullable=False)
     orden = db.Column(db.Integer, nullable=True)
 
-    ruta = db.relationship("RutaAprendizaje", back_populates="modulo")
+    ruta = db.relationship("RutaAprendizaje", back_populates="modulos")
+
+    lecciones = db.relationship("Leccion", back_populates="modulo")
 
     def __repr__(self):
         return f"<Modulo {self.titulo} (Ruta {self.id_ruta})>"

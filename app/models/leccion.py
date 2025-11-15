@@ -12,7 +12,8 @@ class Leccion(db.Model):
     orden = db.Column(db.Integer, nullable=True)
 
     # Relación con Modulo (si existe el modelo Modulo)
-    modulo = db.relationship("modulo", backref="leccion", lazy=True)
+
+    modulo = db.relationship("Modulo", back_populates="lecciones")
 
     def __repr__(self):
         return f"<Leccion {self.titulo} (Módulo {self.id_modulo})>"
