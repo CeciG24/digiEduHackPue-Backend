@@ -30,6 +30,13 @@ def create_app():
     from app.routes.UserRoutes import users_bp
     app.register_blueprint(users_bp)
 
+    from app.routes.ModulosRoutes import modulo_bp
+    app.register_blueprint(modulo_bp)
+
+    from app.routes.RutaAprendizajeRoutes import rutas_bp
+    app.register_blueprint(rutas_bp)
+
+    
     # Crear la BD si no existe
     with app.app_context():
         db.create_all()
