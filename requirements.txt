@@ -1,0 +1,9 @@
+Flask
+Flask-CORS
+Flask-RESTful
+python-dotenv
+pyttsx3
+reportlab
+sqlalchemy
+requests
+flask_sqlalchemy
