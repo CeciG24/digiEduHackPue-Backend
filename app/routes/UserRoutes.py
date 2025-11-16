@@ -8,7 +8,7 @@ import jwt
 import datetime
 
 users_bp = Blueprint('auth', __name__)
-SECRET_KEY = "CAMBIA_ESTE_SECRETO"  # Usa variable de entorno real
+SECRET_KEY = "b1c6f026d347330aff440f84173df15f"  # Usa variable de entorno real
 
 # -------------------------
 # REGISTRO
