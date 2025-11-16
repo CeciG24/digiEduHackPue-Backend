@@ -69,6 +69,36 @@ def get_modulos_por_ruta(id_ruta):
             "error": str(e)
         }), 500
 
+# Obtener un módulo por su ID
+@modulo_bp.route("/<int:id_modulo>", methods=['GET'])
+def get_modulo_by_id(id_modulo):
+    try:
+        modulo = Modulo.query.get(id_modulo)
+        if not modulo:
+            return jsonify({
+                "success": False,
+                "error": "Módulo no encontrado"
+            }), 404
+
+        modulo_data = {
+            "id_modulo": modulo.id_modulo,
+            "id_ruta": modulo.id_ruta,
+            "titulo": modulo.titulo,
+            "descripcion": modulo.descripcion,
+            "orden": modulo.orden
+        }
+
+        return jsonify({
+            "success": True,
+            "data": modulo_data
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
 
 @modulo_bp.route("/post-modulo", methods=["POST"])
 def post_modulo():
