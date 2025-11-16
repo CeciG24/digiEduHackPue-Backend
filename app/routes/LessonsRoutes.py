@@ -206,38 +206,57 @@ def delete_leccion(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Error al eliminar leccion: {str(e)}"}), 500
-    
+
+
 @lessons_bp.route('/generate_pdf/<int:leccion_id>', methods=['GET'])
 def generate_pdf(leccion_id):
     leccion = Leccion.query.get_or_404(leccion_id)
 
-    import html
     html_content = f"""
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <style>
-            body {{ font-family: Arial, sans-serif; margin: 2cm; }}
-            h1 {{ text-align: center; }}
-            p {{ margin-bottom: 1em; line-height: 1.5; }}
-        </style>
-    </head>
-    <body>
-        <h1>Lección: {html.escape(leccion.titulo)}</h1>
-        <p>{html.escape(leccion.contenido).replace('\n', '<br>')}</p>
-    </body>
-    </html>
-    """
+     <!DOCTYPE html>
+     <html>
+     <head>
+         <meta charset="utf-8">
+         <style>
+             body {{ 
+                 font-family: Arial, sans-serif; 
+                 margin: 2cm; 
+                 color: #333;
+             }}
+             h1 {{ 
+                 text-align: center; 
+                 color: #2c3e50;
+                 margin-bottom: 1.5em;
+             }}
+             p {{ 
+                 margin-bottom: 1em; 
+                 line-height: 1.6;
+                 text-align: justify;
+             }}
+         </style>
+     </head>
+     <body>
+         <h1>{html.escape(leccion.titulo)}</h1>
+         <p>{html.escape(leccion.contenido).replace(chr(10), '<br>')}</p>
+     </body>
+     </html>
+     """
 
-    pdf_filename = f"leccion_{leccion_id}_{uuid.uuid4()}.pdf"
+    pdf_filename = f"leccion_{leccion_id}_{uuid.uuid4().hex}.pdf"
     pdf_filepath = os.path.join(app.config['PDF_UPLOAD_FOLDER'], pdf_filename)
     os.makedirs(app.config['PDF_UPLOAD_FOLDER'], exist_ok=True)
 
     try:
-        # Forma correcta en WeasyPrint >=58
+        # ✅ CORRECTO: Usar string= como argumento con nombre
         HTML(string=html_content).write_pdf(pdf_filepath)
+
+        return send_file(
+            pdf_filepath,
+            as_attachment=True,
+            download_name=f"{leccion.titulo}.pdf",
+            mimetype='application/pdf'
+        )
+
     except Exception as e:
         print("Error al generar PDF:", e)
         return jsonify({'error': f'Error al generar el PDF: {str(e)}'}), 500
-
-    return send_file(pdf_filepath, as_attachment=True, download_name=f"{leccion.titulo}.pdf")

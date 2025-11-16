@@ -101,3 +101,27 @@ def generate_test(lesson_id):
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+
+@ai_bp.route('/list_models', methods=['GET'])
+def list_models():
+    try:
+        models = []
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                models.append({
+                    'name': m.name,
+                    'display_name': m.display_name,
+                    'description': m.description
+                })
+
+        return jsonify({
+            "success": True,
+            "models": models
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
