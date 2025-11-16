@@ -44,7 +44,6 @@ pypiwin32==223
 python-dotenv==1.2.1
 pyttsx3==2.99
 pytz==2025.2
-pywin32==311
 reportlab==4.4.4
 requests==2.32.5
 rsa==4.9.1
