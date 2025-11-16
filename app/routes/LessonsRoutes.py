@@ -76,7 +76,45 @@ def post_leccion():
             "success": False,
             "error": str(e)
         }), 500
-    
+
+
+# Obtener lecciones por módulo
+@lessons_bp.route("/modulo/<int:id_modulo>", methods=['GET'])
+def get_lecciones_por_modulo(id_modulo):
+    try:
+        lecciones = Leccion.query.filter_by(id_modulo=id_modulo).all()
+
+        if not lecciones:
+            return jsonify({
+                "success": False,
+                "error": "No se encontraron lecciones para este módulo"
+            }), 404
+
+        lecciones_data = [
+            {
+                "id_leccion": leccion.id_leccion,
+                "id_modulo": leccion.id_modulo,
+                "titulo": leccion.titulo,
+                "contenido": leccion.contenido,
+                "tipo": leccion.tipo,
+                "orden": leccion.orden
+            }
+            for leccion in lecciones
+        ]
+
+        return jsonify({
+            "success": True,
+            "data": lecciones_data,
+            "count": len(lecciones_data)
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+
 @lessons_bp.route("/lecciones/<int:id>", methods=["PUT"])
 def update_leccion(id):
     try:
