@@ -25,7 +25,7 @@ def generate_content():
             return jsonify({"error": "Prompt is required"}), 400
 
         # Usar Gemini (API actual de Google)
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('Gemini 2.5 Pro')
 
         response = model.generate_content(prompt)
 
