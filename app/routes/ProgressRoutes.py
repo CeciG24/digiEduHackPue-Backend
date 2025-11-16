@@ -3,7 +3,6 @@ from app import db
 from flask import Blueprint
 import json
 from app.models.progress import Progress
-from flask_login import current_user, login_required
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 progress_bp = Blueprint('progress', __name__, url_prefix='/progress')
