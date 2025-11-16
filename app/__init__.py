@@ -48,6 +48,9 @@ def create_app():
 
     from app.routes.AiRoutes import ai_bp
     app.register_blueprint(ai_bp)
+
+    from app.routes.ProgressRoutes import progress_bp
+    app.register_blueprint(progress_bp)
     
     # Crear la BD si no existe
     with app.app_context():

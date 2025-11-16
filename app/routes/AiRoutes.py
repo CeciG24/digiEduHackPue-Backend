@@ -12,9 +12,6 @@ genai.configure(api_key=API_KEY)
 
 ai_bp = Blueprint('ai', __name__, url_prefix='/ai')
 
-
-
-
 @ai_bp.route('/generate_content', methods=['POST'])
 def generate_content():
     try:
@@ -73,35 +70,23 @@ def generate_test(lesson_id):
             "Salida esperada: {\"questions\":[{\"question\":\"...\",\"options\":[\"a\",\"b\",\"c\",\"d\"],\"answer\":2}]}"
         )
 
-        response = genai.Completion.create(
-            model="genai-3.5-turbo",
-            prompt=prompt,
-            max_tokens=700,
-            temperature=0.2
-        )
+        model = genai.GenerativeModel('gemini-2.5-pro')
 
-        generated_text = response.choices[0].text.strip()
+        response = model.generate_content(prompt)
 
-        # Intentar parsear JSON
-        try:
-            generated_json = json.loads(generated_text)
-        except Exception:
-            generated_json = None
+        # Extraer el texto generado
+        generated_text = response.text
 
-        result = {
+        return jsonify({
             "success": True,
-            "lesson_id": lesson_id,
             "generated_text": generated_text
-        }
-
-        if generated_json:
-            result["generated_test"] = generated_json
-
-        return jsonify(result), 200
+        }), 200
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
-
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
 
 @ai_bp.route('/list_models', methods=['GET'])
 def list_models():
