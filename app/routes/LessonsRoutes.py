@@ -1,7 +1,12 @@
-from flask import Blueprint
+from flask import Blueprint, app
 from flask import request, jsonify
 from app.models.leccion import Leccion
+from app.models.modulo import Modulo
 from app import db
+import os
+import uuid
+import subprocess
+from flask import send_file
 
 #Creamos el blueprint
 lessons_bp = Blueprint('lessons', __name__, url_prefix='/lessons')
@@ -201,3 +206,66 @@ def delete_leccion(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Error al eliminar leccion: {str(e)}"}), 500
+    
+# Plantilla LaTeX para el PDF (incluye el nombre del módulo)
+LATEX_TEMPLATE = r"""
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish]{babel}
+\usepackage{parskip}
+\usepackage{geometry}
+\geometry{margin=2cm}
+
+\begin{document}
+
+\begin{center}
+    \textbf{\Large } \\
+    \vspace{0.5cm}
+    \textbf{Lección: %s}
+\end{center}
+
+%s
+
+\end{document}
+"""
+
+@lessons_bp.route('/generate_pdf/<int:leccion_id>', methods=['GET'])
+def generate_pdf(leccion_id):
+    # Obtener la lección desde la base de datos
+    leccion = Leccion.query.get_or_404(leccion_id)
+
+    # Obtener el nombre del módulo asociado
+    modulo = Modulo.query.get(leccion.id_modulo)
+
+    # Generar contenido LaTeX
+    title = leccion.titulo
+    content = leccion.contenido.replace('\n', '\n\n')  # Asegurar párrafos en LaTeX
+    latex_content = LATEX_TEMPLATE % ( title, content)
+
+    # Generar nombre de archivo único
+    pdf_filename = f"leccion_{leccion_id}_{uuid.uuid4()}.pdf"
+    pdf_filepath = os.path.join(app.config['PDF_UPLOAD_FOLDER'], pdf_filename)
+    tex_filepath = os.path.join(app.config['PDF_UPLOAD_FOLDER'], f"leccion_{leccion_id}.tex")
+
+    # Escribir archivo .tex
+    with open(tex_filepath, 'w', encoding='utf-8') as f:
+        f.write(latex_content)
+
+    # Compilar LaTeX a PDF usando latexmk
+    try:
+        subprocess.run(['latexmk', '-pdf', '-pdflatex=pdflatex', tex_filepath],
+                       cwd=app.config['PDF_UPLOAD_FOLDER'], check=True)
+    except subprocess.CalledProcessError as e:
+        return jsonify({'error': 'Error al generar el PDF'}), 500
+
+    # Limpiar archivos auxiliares
+    for ext in ['.aux', '.log', '.out', '.tex', '.fls', '.fdb_latexmk']:
+        try:
+            os.remove(os.path.join(app.config['PDF_UPLOAD_FOLDER'], f"leccion_{leccion_id}{ext}"))
+        except FileNotFoundError:
+            pass
+
+    # Enviar el PDF al cliente
+    return send_file(pdf_filepath, as_attachment=True, download_name=f"{title}.pdf")
