@@ -209,10 +209,9 @@ def delete_leccion(id):
     
 @lessons_bp.route('/generate_pdf/<int:leccion_id>', methods=['GET'])
 def generate_pdf(leccion_id):
-    # Obtener la lección desde la base de datos
     leccion = Leccion.query.get_or_404(leccion_id)
 
-    # Contenido HTML para el PDF
+    import html
     html_content = f"""
     <html>
     <head>
@@ -224,24 +223,21 @@ def generate_pdf(leccion_id):
         </style>
     </head>
     <body>
-        <h1>Lección: {leccion.titulo}</h1>
-        <p>{leccion.contenido.replace('\n', '<br>')}</p>
+        <h1>Lección: {html.escape(leccion.titulo)}</h1>
+        <p>{html.escape(leccion.contenido).replace('\n', '<br>')}</p>
     </body>
     </html>
     """
 
-    # Generar nombre de archivo único
     pdf_filename = f"leccion_{leccion_id}_{uuid.uuid4()}.pdf"
     pdf_filepath = os.path.join(app.config['PDF_UPLOAD_FOLDER'], pdf_filename)
-
-    # Asegurarse que la carpeta exista
     os.makedirs(app.config['PDF_UPLOAD_FOLDER'], exist_ok=True)
 
-    # Generar el PDF
     try:
+        # Forma correcta en WeasyPrint >=58
         HTML(string=html_content).write_pdf(pdf_filepath)
     except Exception as e:
+        print("Error al generar PDF:", e)
         return jsonify({'error': f'Error al generar el PDF: {str(e)}'}), 500
 
-    # Enviar el PDF al cliente
     return send_file(pdf_filepath, as_attachment=True, download_name=f"{leccion.titulo}.pdf")

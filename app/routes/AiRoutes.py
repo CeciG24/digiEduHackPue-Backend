@@ -13,20 +13,80 @@ ai_bp = Blueprint('ai', __name__, url_prefix='/ai')
 @ai_bp.route('/generate_content', methods=['POST'])
 def generate_content():
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
         prompt = data.get('prompt', '')
 
         if not prompt:
             return jsonify({"error": "Prompt is required"}), 400
 
-        response = genai.Completion.create(
-            model="genai-3.5-turbo",
-            prompt=prompt,
-            max_tokens=500,
-            temperature=0.7
-        )
+        # Intentar varias formas de invocar la librería (según versión)
+        last_response = None
+        generated_text = None
 
-        generated_text = response.choices[0].text.strip()
+        # 1) genai.generate_text(...) (forma común)
+        try:
+            last_response = genai.generate_text(
+                model="text-bison-001",       # o el modelo que uses
+                prompt=prompt,
+                max_output_tokens=500,
+                temperature=0.7
+            )
+            # Extraer texto de estructuras comunes
+            if hasattr(last_response, "candidates") and last_response.candidates:
+                # candidate puede tener .content, .output, .text, etc.
+                cand = last_response.candidates[0]
+                generated_text = getattr(cand, "content", None) or getattr(cand, "output", None) or getattr(cand, "text", None)
+            elif hasattr(last_response, "text"):
+                generated_text = last_response.text
+        except Exception:
+            generated_text = None
+
+        # 2) genai.text.generate(...) (otra API posible)
+        if not generated_text and hasattr(genai, "text"):
+            try:
+                last_response = genai.text.generate(
+                    model="text-bison-001",
+                    input=prompt,
+                    max_output_tokens=500,
+                    temperature=0.7
+                )
+                if hasattr(last_response, "candidates") and last_response.candidates:
+                    cand = last_response.candidates[0]
+                    generated_text = getattr(cand, "content", None) or getattr(cand, "text", None)
+            except Exception:
+                generated_text = None
+
+        # 3) genai.chat.generate(...) (si tu versión expone chat)
+        if not generated_text and hasattr(genai, "chat"):
+            try:
+                last_response = genai.chat.generate(
+                    model="gpt-4o-mini",  # ajustá si usás otro
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.7
+                )
+                if hasattr(last_response, "candidates") and last_response.candidates:
+                    cand = last_response.candidates[0]
+                    generated_text = getattr(cand, "content", None) or getattr(cand, "message", None)
+                # algunas versiones tienen last.output_text
+                if not generated_text and hasattr(last_response, "last") and hasattr(last_response.last, "output_text"):
+                    generated_text = last_response.last.output_text
+            except Exception:
+                generated_text = None
+
+        # Fallback: si el response es dict-like con candidates
+        if not generated_text and isinstance(last_response, dict):
+            candidates = last_response.get("candidates") or last_response.get("outputs") or []
+            if candidates:
+                first = candidates[0]
+                generated_text = first.get("content") or first.get("text") or first.get("output")
+
+        if not generated_text:
+            # Devuelve raw_response para debug (stringify)
+            return jsonify({
+                "success": False,
+                "error": "No se pudo extraer texto de la respuesta del modelo",
+                "raw_response": str(last_response)
+            }), 500
 
         return jsonify({
             "success": True,
@@ -38,7 +98,6 @@ def generate_content():
             "success": False,
             "error": str(e)
         }), 500
-    
 
 @ai_bp.route('/generate-test/<int:lesson_id>', methods=['POST'])
 def generate_test(lesson_id):
