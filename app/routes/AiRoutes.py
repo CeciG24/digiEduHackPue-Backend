@@ -3,7 +3,7 @@ from app import db
 import google.generativeai as genai
 from flask import Blueprint
 import json
-from app.models import Leccion
+from app.models.leccion import Leccion
 
 API_KEY = "AIzaSyAK_Rdnf7HGgnn90A5asOytIEPd7QMI8zw"
 genai.configure(api_key=API_KEY)
