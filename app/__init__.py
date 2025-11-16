@@ -20,6 +20,12 @@ def create_app():
     )
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Carpeta para guardar PDFs
+    app.config['PDF_UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads/pdfs')
+
+    # Crear la carpeta si no existe
+    os.makedirs(app.config['PDF_UPLOAD_FOLDER'],exist_ok=True)
     # Inicializar extensiones
     db.init_app(app)
     CORS(app)
