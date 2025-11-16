@@ -8,7 +8,7 @@ from flask import send_file, jsonify
 from weasyprint import HTML
 import os
 import uuid
-
+import html
 
 #Creamos el blueprint
 lessons_bp = Blueprint('lessons', __name__, url_prefix='/lessons')
