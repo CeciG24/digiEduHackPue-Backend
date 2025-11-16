@@ -1,4 +1,4 @@
-from flask import Blueprint, app
+from flask import Blueprint, current_app as app
 from flask import request, jsonify
 from app.models.leccion import Leccion
 from app.models.modulo import Modulo
@@ -234,9 +234,6 @@ def generate_pdf(leccion_id):
     # Obtener la lección desde la base de datos
     leccion = Leccion.query.get_or_404(leccion_id)
 
-    # Obtener el nombre del módulo asociado
-    modulo = Modulo.query.get(leccion.id_modulo)
-
     # Generar contenido LaTeX
     title = leccion.titulo
     content = leccion.contenido.replace('\n', '\n\n')  # Asegurar párrafos en LaTeX
@@ -255,7 +252,7 @@ def generate_pdf(leccion_id):
     try:
         subprocess.run(['latexmk', '-pdf', '-pdflatex=pdflatex', tex_filepath],
                        cwd=app.config['PDF_UPLOAD_FOLDER'], check=True)
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         return jsonify({'error': 'Error al generar el PDF'}), 500
 
     # Limpiar archivos auxiliares
