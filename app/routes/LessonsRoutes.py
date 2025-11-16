@@ -151,8 +151,6 @@ def get_leccion_by_id(id_leccion):
             "error": str(e)
         }), 500
 
-
-
 @lessons_bp.route("/lecciones/<int:id>", methods=["PUT"])
 def update_leccion(id):
     try:

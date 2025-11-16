@@ -40,6 +40,8 @@ def create_app():
     from app.routes.RutaAprendizajeRoutes import rutas_bp
     app.register_blueprint(rutas_bp)
 
+    from app.routes.AiRoutes import ai_bp
+    app.register_blueprint(ai_bp)
     
     # Crear la BD si no existe
     with app.app_context():
