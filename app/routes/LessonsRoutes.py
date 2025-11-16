@@ -8,7 +8,7 @@ from flask import send_file, jsonify
 from weasyprint import HTML
 import os
 import uuid
-import html
+from html import escape
 
 #Creamos el blueprint
 lessons_bp = Blueprint('lessons', __name__, url_prefix='/lessons')
@@ -213,34 +213,34 @@ def generate_pdf(leccion_id):
     leccion = Leccion.query.get_or_404(leccion_id)
 
     html_content = f"""
-     <!DOCTYPE html>
-     <html>
-     <head>
-         <meta charset="utf-8">
-         <style>
-             body {{ 
-                 font-family: Arial, sans-serif; 
-                 margin: 2cm; 
-                 color: #333;
-             }}
-             h1 {{ 
-                 text-align: center; 
-                 color: #2c3e50;
-                 margin-bottom: 1.5em;
-             }}
-             p {{ 
-                 margin-bottom: 1em; 
-                 line-height: 1.6;
-                 text-align: justify;
-             }}
-         </style>
-     </head>
-     <body>
-         <h1>{html.escape(leccion.titulo)}</h1>
-         <p>{html.escape(leccion.contenido).replace(chr(10), '<br>')}</p>
-     </body>
-     </html>
-     """
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {{ 
+            font-family: Arial, sans-serif; 
+            margin: 2cm; 
+            color: #333;
+        }}
+        h1 {{ 
+            text-align: center; 
+            color: #2c3e50;
+            margin-bottom: 1.5em;
+        }}
+        p {{ 
+            margin-bottom: 1em; 
+            line-height: 1.6;
+            text-align: justify;
+        }}
+    </style>
+</head>
+<body>
+    <h1>{escape(leccion.titulo)}</h1>
+    <p>{escape(leccion.contenido).replace(chr(10), '<br>')}</p>
+</body>
+</html>
+"""
 
     pdf_filename = f"leccion_{leccion_id}_{uuid.uuid4().hex}.pdf"
     pdf_filepath = os.path.join(app.config['PDF_UPLOAD_FOLDER'], pdf_filename)
