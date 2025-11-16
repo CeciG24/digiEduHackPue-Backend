@@ -60,4 +60,3 @@ weasyprint==58.0
 cairocffi==1.4.0
 tinycss2==1.2.1
 PyJWT==2.9.0
-flask_jwt_extended==4.4.4
